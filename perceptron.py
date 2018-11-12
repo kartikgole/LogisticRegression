@@ -75,19 +75,17 @@ def gradient(wts, X, y):
     return (gradflat)
 
 # ojective function cross-entropy
-def costFunction(theta, X, y):
+def objcost(theta, X, y):
     m = y.size
     h = sigmoid(X.dot(theta))
 
-    # dividing derivative by m(size of training set) to avoid NaN
+    # dividing derivative by m(size of data set) to avoid NaN
 
     newtheta = -1 * (1 / m) * (np.log(h).T.dot(y) + np.log(1 - h).T.dot(1 - y))
 
     #rechecking to avoid NaN
     if np.isnan(newtheta[0]):
         return (np.inf)
-
-    #print(J[0])
     return (newtheta[0])
 
 
@@ -104,8 +102,6 @@ def pltroc(y_test, p):
     plt.ylabel('TPR')
     plt.xlabel('FPR')
     x = false[1]
-
-    plt.fill(false, true, 'c', true, false, 'c', [0.0, 1.0, 1.0], [0.0, 0.0, x], 'c')
     plt.show()
 
 
@@ -114,21 +110,17 @@ init_wts = np.ones(X.shape[1])
 
 #print(initial_theta)
 
-cost = costFunction(init_wts, X, y)
+cost = objcost(init_wts, X, y)
 grad = gradient(init_wts, X, y)
 
 print('Weights: \n', cost)
 print('Gradient: \n', grad)
 
-
 #based on batch training, executing entropy cost function 9999 times with initial value of theta = [1. 1. 1.]
-res = minimize(costFunction, init_wts, args=(X, y), options={'maxiter': 9999})
-#print(res.x)
-
+res = minimize(objcost, init_wts, args=(X, y), options={'maxiter': 9999})
 
 #Online training of data based on the latest grad value retrieved from above
-resnew = minimize(costFunction, grad, args=(X, y), options={'maxiter': 10000})
-#print(resnew.x)
+resnew = minimize(objcost, grad, args=(X, y), options={'maxiter': 10000})
 
 #predictions based with batch training
 prediction = predict(res.x, X_test, 0.1)
@@ -161,8 +153,10 @@ print('(Accuracy for Online training lr = 0.01) {}%'.format(100 * sum(prediction
 print('(Accuracy for Online training lr = 1) {}%'.format(100 * sum(prediction4online2 == y_test.ravel()) / prediction4online2.size))
 print("Edges learned with batch training:- ")
 print(res.x)
+
 print("Edges learned with Online training:- ")
 print(resnew.x)
+
 pltroc(y_test, prediction)
 pltroc(y_test, prediction1)
 pltroc(y_test, prediction2)
