@@ -59,7 +59,9 @@ def sigmoid(z):
 def costFunction(theta, X, y):  # cross-entropy
     m = y.size
     h = sigmoid(X.dot(theta))
+    # dividing derivative by m(size of training set) to avoid NaN
     J = -1 * (1 / m) * (np.log(h).T.dot(y) + np.log(1 - h).T.dot(1 - y))
+
     if np.isnan(J[0]):
         return (np.inf)
     return (J[0])
@@ -70,11 +72,11 @@ def gradient(theta, X, y):
     h = sigmoid(X.dot(theta.reshape(-1, 1)))
 
     grad = (1 / m) * X.T.dot(h - y)
-    # print(grad)
+    #print(grad)
     return (grad.flatten())
 
 
-def predict(theta, X, lr=0.01):
+def predict(theta, X, lr):
     p = sigmoid(X.dot(theta.T)) >= lr
     return (p.astype('int'))
 
@@ -97,7 +99,9 @@ def plotcurve(y_test, p):
     plt.show()
 
 
-initial_theta = np.zeros(X.shape[1])  # weights and bias [ 0.  0.  0.]
+initial_theta = np.ones(X.shape[1])  # initial weights [ 1. 1. 1.]
+
+print(initial_theta)
 
 cost = costFunction(initial_theta, X, y)
 grad = gradient(initial_theta, X, y)
@@ -105,9 +109,18 @@ grad = gradient(initial_theta, X, y)
 print('Cost: \n', cost)
 print('Grad: \n', grad)
 
-res = minimize(costFunction, initial_theta, args=(X, y), method=None, jac=gradient, options={'maxiter': 3000})
+costaferonline = costFunction(cost, X, y)
+gradafteronline = gradient(grad, X, y)
 
-p = predict(res.x, X_test)
+print('Cost online: \n', costaferonline)
+print('Grad online: \n', gradafteronline)
+
+
+res = minimize(costFunction, gradafteronline, args=(X, y), method=None, jac=gradient, options={'maxiter': 9999})
+
+p = predict(res.x, X_test, 0.1)
+p1 = predict(res.x, X_test, 0.01)
+p2 = predict(res.x, X_test, 1)
 
 x1_min, x1_max = X_test[:, 1].min(), X_test[:, 1].max()
 x2_min, x2_max = X_test[:, 2].min(), X_test[:, 2].max()
@@ -118,7 +131,11 @@ h = h.reshape(xx1.shape)
 
 plt.contour(xx1, xx2, h, [0.5], linewidths=2, colors='k');
 
-print('Accuracy {}%'.format(100 * sum(p == y_test.ravel()) / p.size))
+print('(Accuracy for lr = 0.1) {}%'.format(100 * sum(p == y_test.ravel()) / p.size))
+print('(Accuracy for lr = 0.01) {}%'.format(100 * sum(p1 == y_test.ravel()) / p1.size))
+print('(Accuracy for lr = 1) {}%'.format(100 * sum(p2 == y_test.ravel()) / p2.size))
 
 plotData(data_test, 'X-axis', 'Y-axis', '1', '0')
 plotcurve(y_test, p)
+plotcurve(y_test, p1)
+plotcurve(y_test, p2)
